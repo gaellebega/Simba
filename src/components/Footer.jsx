@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import BrandLogo from './BrandLogo';
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -9,10 +10,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <div className="logo">
-              <div className="logo-icon">S</div>
-              Simba
-            </div>
+            <BrandLogo compact />
             <p className="footer-brand-desc">{t('aboutSimba')}</p>
           </div>
 
@@ -21,27 +19,27 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/" className="footer-link">{t('home')}</Link></li>
               <li><Link to="/category/all" className="footer-link">{t('shop')}</Link></li>
-              <li><a href="#" className="footer-link">{t('about')}</a></li>
-              <li><a href="#" className="footer-link">{t('contact')}</a></li>
+              <li><a href="/#services" className="footer-link">{t('about')}</a></li>
+              <li><a href="/#footer" className="footer-link">{t('contact')}</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="footer-title">{t('customerService')}</h4>
             <ul className="footer-links">
-              <li><a href="#" className="footer-link">{t('faq')}</a></li>
-              <li><a href="#" className="footer-link">{t('returns')}</a></li>
-              <li><a href="#" className="footer-link">{t('shipping')}</a></li>
-              <li><a href="#" className="footer-link">{t('privacy')}</a></li>
+              <li><Link to="/cart" className="footer-link">{t('viewCart')}</Link></li>
+              <li><a href="/#services" className="footer-link">{t('faq')}</a></li>
+              <li><a href="/#services" className="footer-link">{t('shipping')}</a></li>
+              <li><a href="/#footer" className="footer-link">{t('privacy')}</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="footer-title">{t('contactUs')}</h4>
             <ul className="footer-links">
-              <li><span className="footer-link">📍 KG 11 Ave, Kigali</span></li>
-              <li><span className="footer-link">📞 +250 788 123 456</span></li>
-              <li><span className="footer-link">✉️ info@simba.rw</span></li>
+              <li><span className="footer-link">KG 11 Ave, Kigali</span></li>
+              <li><span className="footer-link">+250 788 123 456</span></li>
+              <li><span className="footer-link">info@simba.rw</span></li>
             </ul>
           </div>
         </div>

@@ -1,111 +1,135 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useLanguage } from '../context/LanguageContext';
-import { formatPrice } from '../utils/helpers';
+import { useSimba } from '../context/SimbaContext';
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-RW', {
+    style: 'currency',
+    currency: 'RWF',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 export default function CartDrawer() {
   const {
     cart,
+    cartSummary,
     isCartOpen,
     setIsCartOpen,
+    updateCartQuantity,
     removeFromCart,
-    updateQuantity,
-    getCartTotal,
-    getCartCount,
-  } = useCart();
-  const { t } = useLanguage();
+    selectedBranch,
+  } = useSimba();
 
-  const total = getCartTotal();
-  const count = getCartCount();
-  const deliveryFee = total >= 50000 ? 0 : 2000;
+  const deliveryFee = cartSummary.total >= 50000 ? 0 : 2000;
 
   return (
     <>
       <div
-        className={`cart-drawer-overlay ${isCartOpen ? 'open' : ''}`}
+        className={`simba-drawer-overlay${isCartOpen ? ' open' : ''}`}
         onClick={() => setIsCartOpen(false)}
-        id="cart-overlay"
       />
-      <div className={`cart-drawer ${isCartOpen ? 'open' : ''}`} id="cart-drawer">
-        <div className="cart-drawer-header">
-          <h2 className="cart-drawer-title">
-            {t('shoppingCart')} ({count} {t('items')})
+      <div className={`simba-cart-drawer${isCartOpen ? ' open' : ''}`}>
+        <div className="simba-drawer-header">
+          <h2>
+            Cart
+            {' '}
+            <span className="simba-chip">{cartSummary.count}</span>
           </h2>
-          <button
-            className="cart-drawer-close"
-            onClick={() => setIsCartOpen(false)}
-            id="cart-close"
-          >✕</button>
+          <button className="simba-drawer-close" type="button" onClick={() => setIsCartOpen(false)}>
+            ✕
+          </button>
         </div>
 
-        {cart.length === 0 ? (
-          <div className="empty-cart">
-            <div className="empty-cart-icon">🛒</div>
-            <p className="empty-cart-text">{t('emptyCart')}</p>
-            <p style={{ fontSize: '14px', marginBottom: '16px' }}>{t('emptyCartText')}</p>
-            <button
-              className="add-to-cart-btn"
-              onClick={() => setIsCartOpen(false)}
-            >
-              {t('continueShopping')}
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="cart-drawer-items">
-              {cart.map(item => (
-                <div key={item.id} className="cart-item" id={`cart-item-${item.id}`}>
-                  <div className="cart-item-image">
-                    <img src={item.image} alt={item.name} />
-                  </div>
-                  <div className="cart-item-info">
-                    <h4 className="cart-item-name">{item.name}</h4>
-                    <p className="cart-item-price">{formatPrice(item.price)} RWF</p>
-                    <div className="cart-item-actions">
-                      <div className="quantity-controls">
-                        <button
-                          className="qty-btn"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >−</button>
-                        <span className="qty-value">{item.quantity}</span>
-                        <button
-                          className="qty-btn"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >+</button>
-                      </div>
+        <div className="simba-drawer-body">
+          {cart.length === 0 ? (
+            <div className="simba-empty-state">
+              <p>Your cart is empty.</p>
+              <button
+                className="simba-primary-button"
+                type="button"
+                style={{ marginTop: 12 }}
+                onClick={() => setIsCartOpen(false)}
+              >
+                Continue shopping
+              </button>
+            </div>
+          ) : (
+            <div className="simba-drawer-item-list">
+              {cart.map((item) => (
+                <article key={item.id} className="simba-drawer-item">
+                  <img src={item.image} alt={item.name} />
+                  <div className="simba-drawer-item-body">
+                    <p className="simba-drawer-item-name">{item.name}</p>
+                    <p className="simba-drawer-item-price">{formatCurrency(item.price)}</p>
+                    <div className="simba-qty-row">
                       <button
-                        className="cart-item-remove"
+                        className="simba-qty-btn"
+                        type="button"
+                        onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                      >
+                        −
+                      </button>
+                      <span className="simba-qty-value">{item.quantity}</span>
+                      <button
+                        className="simba-qty-btn"
+                        type="button"
+                        onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                        disabled={item.quantity >= item.availableStock}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="simba-remove-btn"
+                        type="button"
                         onClick={() => removeFromCart(item.id)}
-                      >{t('remove')}</button>
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
+          )}
+        </div>
 
-            <div className="cart-drawer-footer">
-              <div className="cart-summary-row">
-                <span>{t('subtotal')}</span>
-                <span>{formatPrice(total)} RWF</span>
-              </div>
-              <div className="cart-summary-row">
-                <span>{t('deliveryFee')}</span>
-                <span>{deliveryFee === 0 ? t('free') : `${formatPrice(deliveryFee)} RWF`}</span>
-              </div>
-              <div className="cart-summary-total">
-                <span>{t('total')}</span>
-                <span>{formatPrice(total + deliveryFee)} RWF</span>
-              </div>
+        {cart.length > 0 && (
+          <div className="simba-drawer-footer">
+            <p className="simba-drawer-branch">
+              Branch:
+              {' '}
+              <strong>{selectedBranch?.name}</strong>
+            </p>
+            <div className="simba-summary-row">
+              <span>Subtotal</span>
+              <span>{formatCurrency(cartSummary.total)}</span>
+            </div>
+            <div className="simba-summary-row">
+              <span>Delivery</span>
+              <span>{deliveryFee === 0 ? 'Free (≥ RWF 50,000)' : formatCurrency(deliveryFee)}</span>
+            </div>
+            <div className="simba-summary-row simba-summary-total">
+              <strong>Total</strong>
+              <strong>{formatCurrency(cartSummary.total + deliveryFee)}</strong>
+            </div>
+            <div className="simba-drawer-actions">
               <Link
-                to="/checkout"
-                className="checkout-btn"
+                className="simba-secondary-button"
+                to="/cart"
                 onClick={() => setIsCartOpen(false)}
-                id="checkout-btn"
               >
-                {t('proceedCheckout')} →
+                View cart
+              </Link>
+              <Link
+                className="simba-primary-button"
+                to="/checkout"
+                onClick={() => setIsCartOpen(false)}
+              >
+                Checkout
               </Link>
             </div>
-          </>
+          </div>
         )}
       </div>
     </>

@@ -13,17 +13,17 @@ export default function FilterPanel({
 }) {
   const { t } = useLanguage();
 
-  const handleCategoryToggle = (cat) => {
-    if (selectedCategories.includes(cat)) {
-      onCategoryChange(selectedCategories.filter(c => c !== cat));
+  const handleCategoryToggle = (category) => {
+    if (selectedCategories.includes(category)) {
+      onCategoryChange(selectedCategories.filter((item) => item !== category));
     } else {
-      onCategoryChange([...selectedCategories, cat]);
+      onCategoryChange([...selectedCategories, category]);
     }
   };
 
   return (
     <aside className={`filter-panel ${showMobile ? 'show-mobile' : ''}`} id="filter-panel">
-      <button className="filter-close-mobile" onClick={onCloseMobile}>✕</button>
+      <button className="filter-close-mobile" onClick={onCloseMobile}>Close</button>
 
       <div className="filter-section">
         <h3 className="filter-title">{t('priceRange')}</h3>
@@ -36,7 +36,7 @@ export default function FilterPanel({
             onChange={(e) => onPriceChange([e.target.value ? Number(e.target.value) : 0, priceRange[1]])}
             id="filter-min-price"
           />
-          <span>—</span>
+          <span>-</span>
           <input
             type="number"
             className="filter-input"
@@ -51,16 +51,16 @@ export default function FilterPanel({
       <div className="filter-section">
         <h3 className="filter-title">{t('categories')}</h3>
         <div className="filter-checkbox-list">
-          {categories.map(cat => (
-            <label key={cat} className="filter-checkbox">
+          {categories.map((category) => (
+            <label key={category} className="filter-checkbox">
               <input
                 type="checkbox"
-                checked={selectedCategories.includes(cat)}
-                onChange={() => handleCategoryToggle(cat)}
+                checked={selectedCategories.includes(category)}
+                onChange={() => handleCategoryToggle(category)}
               />
-              <span>{cat}</span>
+              <span>{category}</span>
               {categoryCounts && (
-                <span className="filter-checkbox-count">{categoryCounts[cat] || 0}</span>
+                <span className="filter-checkbox-count">{categoryCounts[category] || 0}</span>
               )}
             </label>
           ))}
