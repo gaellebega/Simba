@@ -18,7 +18,7 @@ export default function ProductGrid({ products, title, showCount = true }) {
       )}
       {products.length > 0 ? (
         <div className="product-grid" id="product-grid">
-          {products.map(product => (
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

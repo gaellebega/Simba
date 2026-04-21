@@ -3,23 +3,9 @@ export function formatPrice(price) {
 }
 
 export function generateImageUrl(product) {
-  // Map categories to relevant Unsplash search terms for better images
-  const categoryImages = {
-    'Cosmetics & Personal Care': 'cosmetics beauty products',
-    'Alcoholic Drinks': 'beverages drinks bottles',
-    'Food Products': 'groceries food products',
-    'Kitchenware & Electronics': 'kitchenware kitchen tools',
-    'General': 'household products',
-    'Cleaning & Sanitary': 'cleaning supplies',
-    'Sports & Fitness': 'fitness equipment',
-    'Stationery': 'stationery office supplies',
-    'Baby Products': 'baby care products',
-  };
-
-  // Use a deterministic seed based on product id for consistent placeholder images
   const colors = [
-    'FF6B00', '10B981', '3B82F6', '8B5CF6', 'EC4899',
-    'F59E0B', '06B6D4', 'EF4444', '84CC16', '6366F1'
+    'FF6B00', '10B981', '3B82F6', 'EC4899', 'F59E0B',
+    '06B6D4', 'EF4444', '84CC16', '6366F1'
   ];
   const color = colors[product.id % colors.length];
   const name = encodeURIComponent(product.name.substring(0, 25));
@@ -29,17 +15,17 @@ export function generateImageUrl(product) {
 
 export function getCategoryIcon(category) {
   const icons = {
-    'Cosmetics & Personal Care': '💄',
-    'Alcoholic Drinks': '🍷',
-    'Food Products': '🥫',
-    'Kitchenware & Electronics': '🍳',
-    'General': '📦',
-    'Cleaning & Sanitary': '🧹',
-    'Sports & Fitness': '🏋️',
-    'Stationery': '📝',
-    'Baby Products': '🍼',
+    'Cosmetics & Personal Care': '\u2728',
+    'Alcoholic Drinks': '\uD83C\uDF77',
+    'Food Products': '\uD83C\uDF4E',
+    'Kitchenware & Electronics': '\uD83C\uDF7D',
+    General: '\u25A0',
+    'Cleaning & Sanitary': '\uD83E\uDDFC',
+    'Sports & Fitness': '\uD83C\uDFCB',
+    Stationery: '\u270E',
+    'Baby Products': '\uD83D\uDC76',
   };
-  return icons[category] || '📦';
+  return icons[category] || '\u25A0';
 }
 
 export function getCategoryImage(category) {
@@ -48,13 +34,13 @@ export function getCategoryImage(category) {
     'Alcoholic Drinks': 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop',
     'Food Products': 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
     'Kitchenware & Electronics': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop',
-    'General': 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400&h=300&fit=crop',
+    General: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400&h=300&fit=crop',
     'Cleaning & Sanitary': 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=400&h=300&fit=crop',
     'Sports & Fitness': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
-    'Stationery': 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=300&fit=crop',
+    Stationery: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=300&fit=crop',
     'Baby Products': 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&h=300&fit=crop',
   };
-  return images[category] || images['General'];
+  return images[category] || images.General;
 }
 
 export function debounce(func, wait) {
@@ -76,4 +62,8 @@ export function generateOrderNumber() {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+export function getProductRating(id) {
+  return 4 + ((id % 9) / 10);
 }
