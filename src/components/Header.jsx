@@ -1,109 +1,99 @@
 import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import BrandLogo from './BrandLogo';
-import { useSimba } from '../context/SimbaContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
-export default function Header() {
-  const navigate = useNavigate();
-  const {
-    currentUser,
-    selectedBranchId,
-    selectedBranch,
-    setSelectedBranch,
-    store,
-    signOut,
-    cartSummary,
-    setIsCartOpen,
-  } = useSimba();
+export default function Header({ onSearch }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const { getCartCount, setIsCartOpen } = useCart();
+  const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const cartCount = getCartCount();
 
-  const activeBranches = store?.branches.filter((branch) => branch.status === 'active') || [];
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+    if (onSearch) onSearch(searchQuery);
+  };
 
-  function closeMenu() {
-    setIsMenuOpen(false);
-  }
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (onSearch) onSearch(e.target.value);
+  };
 
   return (
-    <header className="simba-header">
-      <div className="simba-topbar">
-        <div className="simba-container simba-topbar-inner">
-          <span>Multi-branch Simba Supermarket platform for Kigali and beyond.</span>
-          <span>
-            Branch:
-            {' '}
-            <strong>{selectedBranch?.name || 'None'}</strong>
-          </span>
-        </div>
-      </div>
-
-      <div className="simba-container simba-header-main">
-        <BrandLogo to="/" className="simba-brand-link" />
-
-        <nav className={`simba-nav${isMenuOpen ? ' open' : ''}`}>
-          <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
-          <NavLink to="/catalog" onClick={closeMenu}>Shop</NavLink>
-          {currentUser && <NavLink to="/account" onClick={closeMenu}>My Orders</NavLink>}
-          {currentUser?.role === 'admin' && <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>}
-        </nav>
-
-        <div className="simba-header-tools">
-          <label className="simba-inline-field simba-branch-picker">
-            <span>Branch</span>
-            <select
-              value={selectedBranchId}
-              onChange={(event) => setSelectedBranch(event.target.value)}
-            >
-              {activeBranches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button className="simba-icon-button" onClick={toggleTheme} type="button">
-            {theme === 'dark' ? '☀ Light' : '☾ Dark'}
-          </button>
-
-          <button className="simba-cart-pill" type="button" onClick={() => setIsCartOpen(true)}>
-            Cart
-            <span>{cartSummary.count}</span>
-          </button>
-
-          {currentUser ? (
-            <div className="simba-user-tools">
-              <span className="simba-user-name">{currentUser.name}</span>
+    <header className="header" id="site-header">
+      <div className="container">
+        <div className="header-top">
+          <span>📍 {t('kigali')} | {t('freeDelivery')}</span>
+          <div className="header-top-actions">
+            <div className="lang-switcher" id="language-switcher">
               <button
-                className="simba-secondary-button"
-                type="button"
-                onClick={() => {
-                  signOut();
-                  closeMenu();
-                  navigate('/');
-                }}
-              >
-                Sign out
+                className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+                onClick={() => setLanguage('en')}
+                id="lang-en"
+              >EN</button>
+              <button
+                className={`lang-btn ${language === 'fr' ? 'active' : ''}`}
+                onClick={() => setLanguage('fr')}
+                id="lang-fr"
+              >FR</button>
+              <button
+                className={`lang-btn ${language === 'rw' ? 'active' : ''}`}
+                onClick={() => setLanguage('rw')}
+                id="lang-rw"
+              >RW</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="header-main">
+          <Link to="/" className="logo" id="logo">
+            <div className="logo-icon">S</div>
+            Simba
+          </Link>
+
+          <form className="search-container" onSubmit={handleSearch} id="search-form">
+            <div className="search-wrapper">
+              <input
+                type="text"
+                className="search-input"
+                placeholder={t('search')}
+                value={searchQuery}
+                onChange={handleInputChange}
+                id="search-input"
+              />
+              <button type="submit" className="search-btn" id="search-btn">
+                🔍 {t('searchBtn')}
               </button>
             </div>
-          ) : (
-            <Link className="simba-primary-button" to="/auth" onClick={closeMenu}>
-              Sign in
-            </Link>
-          )}
+          </form>
 
-          <button
-            className="simba-hamburger"
-            type="button"
-            onClick={() => setIsMenuOpen((v) => !v)}
-            aria-label="Toggle navigation menu"
-            aria-expanded={isMenuOpen}
-          >
-            <span className={isMenuOpen ? 'open' : ''} />
-            <span className={isMenuOpen ? 'open' : ''} />
-            <span className={isMenuOpen ? 'open' : ''} />
-          </button>
+          <div className="header-actions">
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={t('darkMode')}
+              id="theme-toggle"
+              aria-label="Toggle dark mode"
+            >
+              {theme === 'dark' ? '🌙' : '☀️'}
+            </button>
+            <button
+              className="header-action-btn"
+              onClick={() => setIsCartOpen(true)}
+              id="cart-btn"
+            >
+              🛒 <span>{t('cart')}</span>
+              {cartCount > 0 && (
+                <span className="cart-badge" key={cartCount}>{cartCount}</span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </header>

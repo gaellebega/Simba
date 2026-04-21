@@ -1,16 +1,18 @@
-import { useSimba } from '../context/SimbaContext';
+import { useCart } from '../context/CartContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ToastContainer() {
-  const { toasts, dismissToast } = useSimba();
+  const { toasts } = useCart();
+  const { t } = useLanguage();
 
   if (toasts.length === 0) return null;
 
   return (
-    <div className="simba-toast-container">
-      {toasts.map((toast) => (
-        <div key={toast.id} className={`simba-toast simba-toast-${toast.type}`}>
-          <span>{toast.message}</span>
-          <button type="button" className="simba-toast-close" onClick={() => dismissToast(toast.id)}>✕</button>
+    <div className="toast-container" id="toast-container">
+      {toasts.map(toast => (
+        <div key={toast.id} className="toast toast-success">
+          <span className="toast-icon">✅</span>
+          <span>{t('addedToCart')}</span>
         </div>
       ))}
     </div>

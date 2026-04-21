@@ -1,52 +1,79 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
-import { ThemeProvider } from './context/ThemeContext';
+import { useState, useEffect, useMemo } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { CartProvider } from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { SimbaProvider, useSimba } from './context/SimbaContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/Header';
-import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
+import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import ProductPage from './pages/ProductPage';
-import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
-import AuthPage from './pages/AuthPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AccountPage from './pages/AccountPage';
-import ProtectedRoute from './components/ProtectedRoute';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
   return null;
 }
 
-function LoadingScreen({ message }) {
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setVisible(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="simba-shell simba-center-panel">
-      <div className="simba-panel simba-loading-card">
-        <div className="simba-spinner" />
-        <p>{message}</p>
-      </div>
-    </div>
+    <button
+      className={`back-to-top ${visible ? 'visible' : ''}`}
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      id="back-to-top"
+      aria-label="Back to top"
+    >
+      ↑
+    </button>
   );
 }
 
 function AppContent() {
-  const { loading, error } = useSimba();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/simba_products.json')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data.products || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load products:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(products.map(p => p.category))];
+    return cats.sort();
+  }, [products]);
 
   if (loading) {
-    return <LoadingScreen message="Preparing the Simba Supermarket platform..." />;
-  }
-
-  if (error) {
-    return <LoadingScreen message={error} />;
+    return (
+      <div className="loading-spinner" style={{ minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 16px' }} />
+          <p style={{ color: 'var(--text-tertiary)', fontWeight: 500 }}>Loading Simba Supermarket...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -55,41 +82,30 @@ function AppContent() {
       <Header />
       <CartDrawer />
       <ToastContainer />
-      <main className="simba-shell">
+
+      <main>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/catalog" element={<CategoryPage />} />
-          <Route path="/product/:productId" element={<ProductPage />} />
-          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/"
+            element={<HomePage products={products} categories={categories} />}
+          />
+          <Route
+            path="/category/:categoryName"
+            element={<CategoryPage products={products} categories={categories} />}
+          />
+          <Route
+            path="/product/:productId"
+            element={<ProductPage products={products} />}
+          />
           <Route
             path="/checkout"
-            element={(
-              <ProtectedRoute>
-                <CheckoutPage />
-              </ProtectedRoute>
-            )}
+            element={<CheckoutPage />}
           />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route
-            path="/account"
-            element={(
-              <ProtectedRoute>
-                <AccountPage />
-              </ProtectedRoute>
-            )}
-          />
-          <Route
-            path="/admin"
-            element={(
-              <ProtectedRoute requireRole="admin">
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            )}
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
       <Footer />
+      <BackToTop />
     </>
   );
 }
@@ -99,9 +115,9 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <LanguageProvider>
-          <SimbaProvider>
+          <CartProvider>
             <AppContent />
-          </SimbaProvider>
+          </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>

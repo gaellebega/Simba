@@ -13,17 +13,17 @@ export default function CategoryNav({ categories, activeCategory }) {
           className={`category-nav-item ${activeCategory === 'all' ? 'active' : ''}`}
           id={`${prefix}-cat-nav-all`}
         >
-          {t('allCategories')}
+          🏪 {t('allCategories')}
         </Link>
       </li>
-      {categories.map((category) => (
-        <li key={`${prefix}-${category}`}>
+      {categories.map(cat => (
+        <li key={`${prefix}-${cat}`}>
           <Link
-            to={`/category/${encodeURIComponent(category)}`}
-            className={`category-nav-item ${activeCategory === category ? 'active' : ''}`}
-            id={`${prefix}-cat-nav-${category.replace(/[^a-zA-Z]/g, '')}`}
+            to={`/category/${encodeURIComponent(cat)}`}
+            className={`category-nav-item ${activeCategory === cat ? 'active' : ''}`}
+            id={`${prefix}-cat-nav-${cat.replace(/[^a-zA-Z]/g, '')}`}
           >
-            {getCategoryIcon(category)} {category}
+            {getCategoryIcon(cat)} {cat}
           </Link>
         </li>
       ))}

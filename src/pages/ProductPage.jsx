@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
-import { formatPrice, generateImageUrl, getCategoryIcon, getProductRating } from '../utils/helpers';
+import { formatPrice, generateImageUrl, getCategoryIcon } from '../utils/helpers';
 import ProductGrid from '../components/ProductGrid';
 
 export default function ProductPage({ products }) {
@@ -12,18 +12,22 @@ export default function ProductPage({ products }) {
   const [imageError, setImageError] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
-  const product = useMemo(() => products.find((item) => item.id === Number(productId)), [products, productId]);
+  const product = useMemo(() => {
+    return products.find(p => p.id === Number(productId));
+  }, [products, productId]);
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];
-    return products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 8);
+    return products
+      .filter(p => p.category === product.category && p.id !== product.id)
+      .slice(0, 8);
   }, [products, product]);
 
   if (!product) {
     return (
       <div className="container">
         <div className="no-results" style={{ padding: '80px 0' }}>
-          <div className="no-results-icon">🔍</div>
+          <div className="no-results-icon">😕</div>
           <h3 className="no-results-title">Product not found</h3>
           <Link to="/" className="hero-cta" style={{ marginTop: '16px', display: 'inline-flex' }}>
             {t('backToHome')}
@@ -36,7 +40,6 @@ export default function ProductPage({ products }) {
   const inCart = isInCart(product.id);
   const quantity = getItemQuantity(product.id);
   const imgSrc = imageError ? generateImageUrl(product) : product.image;
-  const rating = getProductRating(product.id);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -47,11 +50,12 @@ export default function ProductPage({ products }) {
   return (
     <div id="product-page">
       <div className="container">
+        {/* Breadcrumb */}
         <div className="breadcrumb">
           <Link to="/">{t('home')}</Link>
-          <span className="breadcrumb-separator">/</span>
+          <span className="breadcrumb-separator">›</span>
           <Link to={`/category/${encodeURIComponent(product.category)}`}>{product.category}</Link>
-          <span className="breadcrumb-separator">/</span>
+          <span className="breadcrumb-separator">›</span>
           <span>{product.name}</span>
         </div>
 
@@ -72,9 +76,6 @@ export default function ProductPage({ products }) {
               <div className="product-detail-price">
                 {formatPrice(product.price)} <small>RWF</small>
               </div>
-              <div className="product-detail-rating">
-                {rating.toFixed(1)} / 5 {t('rating')}
-              </div>
 
               <div className="product-detail-meta">
                 <div className="product-meta-item">
@@ -85,7 +86,7 @@ export default function ProductPage({ products }) {
                   </div>
                 </div>
                 <div className="product-meta-item">
-                  <div className="product-meta-icon" style={{ fontSize: product.inStock ? 20 : 18 }}>
+                  <div className="product-meta-icon">
                     {product.inStock ? '✅' : '❌'}
                   </div>
                   <div>
@@ -107,13 +108,13 @@ export default function ProductPage({ products }) {
               <div className="product-detail-actions">
                 {inCart ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                    <div className="quantity-controls" style={{ transform: 'scale(1.1)', transformOrigin: 'left' }}>
-                      <button className="qty-btn" onClick={() => updateQuantity(product.id, quantity - 1)}>-</button>
+                    <div className="quantity-controls" style={{ transform: 'scale(1.3)', transformOrigin: 'left' }}>
+                      <button className="qty-btn" onClick={() => updateQuantity(product.id, quantity - 1)}>−</button>
                       <span className="qty-value">{quantity}</span>
                       <button className="qty-btn" onClick={() => updateQuantity(product.id, quantity + 1)}>+</button>
                     </div>
                     <span style={{ color: 'var(--accent-emerald)', fontWeight: 600, fontSize: '14px' }}>
-                      {t('added')}
+                      ✅ {t('added')}
                     </span>
                   </div>
                 ) : (
@@ -123,7 +124,7 @@ export default function ProductPage({ products }) {
                     id="product-add-cart"
                     style={justAdded ? { background: 'var(--accent-emerald)' } : {}}
                   >
-                    {justAdded ? t('added') : t('addToCart')}
+                    {justAdded ? '✓ ' + t('added') : '🛒 ' + t('addToCart')}
                   </button>
                 )}
               </div>
@@ -131,6 +132,7 @@ export default function ProductPage({ products }) {
           </div>
         </div>
 
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <ProductGrid
             products={relatedProducts}

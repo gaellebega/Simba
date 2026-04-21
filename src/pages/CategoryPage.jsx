@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import CategoryNav from '../components/CategoryNav';
 import ProductGrid from '../components/ProductGrid';
 import FilterPanel from '../components/FilterPanel';
@@ -21,39 +21,46 @@ export default function CategoryPage({ products, categories }) {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
 
+  // Category counts across all products
   const categoryCounts = useMemo(() => {
     const counts = {};
-    products.forEach((product) => {
-      counts[product.category] = (counts[product.category] || 0) + 1;
+    products.forEach(p => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
     });
     return counts;
   }, [products]);
 
+  // Filter and sort products
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
+    // Category from URL
     if (decodedCategory !== 'all') {
-      result = result.filter((product) => product.category === decodedCategory);
+      result = result.filter(p => p.category === decodedCategory);
     }
 
+    // Category checkboxes (additional filter within "all")
     if (selectedCategories.length > 0) {
-      result = result.filter((product) => selectedCategories.includes(product.category));
+      result = result.filter(p => selectedCategories.includes(p.category));
     }
 
+    // Search
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query)
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
       );
     }
 
-    result = result.filter((product) => {
+    // Price range
+    result = result.filter(p => {
       const min = priceRange[0] || 0;
       const max = priceRange[1] || Infinity;
-      return product.price >= min && product.price <= max;
+      return p.price >= min && p.price <= max;
     });
 
+    // Sort
     switch (sortBy) {
       case 'price-asc':
         result.sort((a, b) => a.price - b.price);
@@ -92,9 +99,10 @@ export default function CategoryPage({ products, categories }) {
       <CategoryNav categories={categories} activeCategory={decodedCategory} />
 
       <div className="container" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
+        {/* Breadcrumb */}
         <div className="breadcrumb">
-          <Link to="/">{t('home')}</Link>
-          <span className="breadcrumb-separator">/</span>
+          <a href="/">{t('home')}</a>
+          <span className="breadcrumb-separator">›</span>
           <span>{decodedCategory === 'all' ? t('allProducts') : decodedCategory}</span>
         </div>
 
@@ -119,12 +127,13 @@ export default function CategoryPage({ products, categories }) {
           </div>
         </div>
 
+        {/* Mobile filter toggle */}
         <button
           className="filter-toggle-mobile"
           onClick={() => setShowMobileFilter(true)}
           id="filter-toggle-mobile"
         >
-          {t('filters')}
+          ⚙️ {t('filters')}
         </button>
 
         <div className={`page-layout ${decodedCategory === 'all' ? 'has-sidebar' : ''}`}>
@@ -150,7 +159,7 @@ export default function CategoryPage({ products, categories }) {
                 <button
                   className="hero-cta"
                   style={{ display: 'inline-flex' }}
-                  onClick={() => setVisibleCount((prev) => prev + PRODUCTS_PER_PAGE)}
+                  onClick={() => setVisibleCount(prev => prev + PRODUCTS_PER_PAGE)}
                   id="load-more-btn"
                 >
                   {t('loadMore')} ({filteredProducts.length - visibleCount} {t('showingProducts')})
