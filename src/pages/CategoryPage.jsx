@@ -3,13 +3,15 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import CategoryNav from '../components/CategoryNav';
 import ProductGrid from '../components/ProductGrid';
 import FilterPanel from '../components/FilterPanel';
+import { useSimba } from '../context/SimbaContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const PRODUCTS_PER_PAGE = 24;
 
-export default function CategoryPage({ products, categories }) {
+export default function CategoryPage() {
   const { categoryName } = useParams();
   const [searchParams] = useSearchParams();
+  const { store } = useSimba();
   const { t } = useLanguage();
 
   const searchQuery = searchParams.get('search') || '';
@@ -21,10 +23,16 @@ export default function CategoryPage({ products, categories }) {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
 
+  const products = store?.products || [];
+  const categoryNames = useMemo(
+    () => (store?.categories || []).map((c) => c.name),
+    [store],
+  );
+
   const categoryCounts = useMemo(() => {
     const counts = {};
     products.forEach((product) => {
-      counts[product.category] = (counts[product.category] || 0) + 1;
+      counts[product.categoryName] = (counts[product.categoryName] || 0) + 1;
     });
     return counts;
   }, [products]);
@@ -33,18 +41,19 @@ export default function CategoryPage({ products, categories }) {
     let result = [...products];
 
     if (decodedCategory !== 'all') {
-      result = result.filter((product) => product.category === decodedCategory);
+      result = result.filter((product) => product.categoryName === decodedCategory);
     }
 
     if (selectedCategories.length > 0) {
-      result = result.filter((product) => selectedCategories.includes(product.category));
+      result = result.filter((product) => selectedCategories.includes(product.categoryName));
     }
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query)
+      result = result.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.categoryName.toLowerCase().includes(query),
       );
     }
 
@@ -84,12 +93,12 @@ export default function CategoryPage({ products, categories }) {
   };
 
   const pageTitle = decodedCategory === 'all'
-    ? (searchQuery ? `"${searchQuery}"` : t('allProducts'))
+    ? (searchQuery ? `Results for "${searchQuery}"` : t('allProducts'))
     : `${t('productsIn')} ${decodedCategory}`;
 
   return (
     <div id="category-page">
-      <CategoryNav categories={categories} activeCategory={decodedCategory} />
+      <CategoryNav categories={categoryNames} activeCategory={decodedCategory} />
 
       <div className="container" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
         <div className="breadcrumb">
@@ -130,7 +139,7 @@ export default function CategoryPage({ products, categories }) {
         <div className={`page-layout ${decodedCategory === 'all' ? 'has-sidebar' : ''}`}>
           {decodedCategory === 'all' && (
             <FilterPanel
-              categories={categories}
+              categories={categoryNames}
               selectedCategories={selectedCategories}
               onCategoryChange={setSelectedCategories}
               priceRange={priceRange}

@@ -3,21 +3,30 @@ import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import CategoryNav from '../components/CategoryNav';
 import ProductGrid from '../components/ProductGrid';
+import { useSimba } from '../context/SimbaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getCategoryImage, getCategoryIcon } from '../utils/helpers';
 
-export default function HomePage({ products, categories }) {
+export default function HomePage() {
+  const { store } = useSimba();
   const { t } = useLanguage();
 
+  const products = store?.products || [];
+  const categoryNames = useMemo(
+    () => (store?.categories || []).map((c) => c.name),
+    [store],
+  );
+
   const featuredProducts = useMemo(() => {
-    const shuffled = [...products].sort((a, b) => (a.id * 7 + b.id * 3) % 11 - 5);
-    return shuffled.slice(0, 12);
+    return [...products]
+      .sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
+      .slice(0, 12);
   }, [products]);
 
   const categoryCounts = useMemo(() => {
     const counts = {};
     products.forEach((product) => {
-      counts[product.category] = (counts[product.category] || 0) + 1;
+      counts[product.categoryName] = (counts[product.categoryName] || 0) + 1;
     });
     return counts;
   }, [products]);
@@ -48,19 +57,19 @@ export default function HomePage({ products, categories }) {
 
   return (
     <div id="home-page">
-      <CategoryNav categories={categories} activeCategory="" />
+      <CategoryNav categories={categoryNames} activeCategory="" />
       <Hero
         productCount={products.length}
-        categoryCount={categories.length}
+        categoryCount={categoryNames.length}
         spotlightProducts={featuredProducts.slice(0, 3)}
       />
 
       <section className="service-strip" id="services">
         <div className="container service-strip-grid">
           <article className="service-card">
-            <div className="service-card-icon">🚚</div>
-            <h3>{t('fastDelivery')}</h3>
-            <p>{t('serviceFastText')}</p>
+            <div className="service-card-icon">🛍️</div>
+            <h3>Easy Pickup</h3>
+            <p>Order online, collect at your nearest Simba branch at a time that suits you.</p>
           </article>
           <article className="service-card">
             <div className="service-card-icon">🌿</div>
@@ -71,6 +80,11 @@ export default function HomePage({ products, categories }) {
             <div className="service-card-icon">🔒</div>
             <h3>{t('securePayments')}</h3>
             <p>{t('serviceSecureText')}</p>
+          </article>
+          <article className="service-card">
+            <div className="service-card-icon">📍</div>
+            <h3>9 Branches</h3>
+            <p>Kigali branches across Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo and more.</p>
           </article>
         </div>
       </section>
@@ -116,7 +130,7 @@ export default function HomePage({ products, categories }) {
           </Link>
         </div>
         <div className="categories-grid" id="categories-grid">
-          {categories.map((category) => (
+          {categoryNames.map((category) => (
             <Link
               key={category}
               to={`/category/${encodeURIComponent(category)}`}
@@ -142,10 +156,7 @@ export default function HomePage({ products, categories }) {
       </section>
 
       <section className="container">
-        <ProductGrid
-          products={featuredProducts}
-          title={t('featuredProducts')}
-        />
+        <ProductGrid products={featuredProducts} title={t('featuredProducts')} />
       </section>
     </div>
   );

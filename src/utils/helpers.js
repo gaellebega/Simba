@@ -5,11 +5,11 @@ export function formatPrice(price) {
 export function generateImageUrl(product) {
   const colors = [
     'FF6B00', '10B981', '3B82F6', 'EC4899', 'F59E0B',
-    '06B6D4', 'EF4444', '84CC16', '6366F1'
+    '06B6D4', 'EF4444', '84CC16', '6366F1',
   ];
-  const color = colors[product.id % colors.length];
+  const numericId = parseInt(String(product.id).replace(/\D/g, '') || '0', 10);
+  const color = colors[numericId % colors.length];
   const name = encodeURIComponent(product.name.substring(0, 25));
-
   return `https://placehold.co/300x300/${color}/ffffff?text=${name}`;
 }
 
@@ -65,5 +65,6 @@ export function generateOrderNumber() {
 }
 
 export function getProductRating(id) {
-  return 4 + ((id % 9) / 10);
+  const numericId = parseInt(String(id).replace(/\D/g, '') || '0', 10);
+  return 4 + ((numericId % 9) / 10);
 }
