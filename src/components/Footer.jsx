@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Phone, Mail, MapPin, Share2, MessageCircle, Globe } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import BrandLogo from './BrandLogo';
 
@@ -9,11 +10,18 @@ export default function Footer() {
     <footer className="footer" id="footer">
       <div className="container">
         <div className="footer-grid">
+          {/* Brand */}
           <div className="footer-brand">
             <BrandLogo compact />
             <p className="footer-brand-desc">{t('aboutSimba')}</p>
+            <div className="footer-social">
+              <a href="#" aria-label="Facebook" className="footer-social-link"><Globe size={16} /></a>
+              <a href="#" aria-label="Instagram" className="footer-social-link"><Share2 size={16} /></a>
+              <a href="#" aria-label="WhatsApp" className="footer-social-link"><MessageCircle size={16} /></a>
+            </div>
           </div>
 
+          {/* Quick links */}
           <div>
             <h4 className="footer-title">{t('quickLinks')}</h4>
             <ul className="footer-links">
@@ -24,6 +32,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Customer service */}
           <div>
             <h4 className="footer-title">{t('customerService')}</h4>
             <ul className="footer-links">
@@ -34,12 +43,22 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
             <h4 className="footer-title">{t('contactUs')}</h4>
             <ul className="footer-links">
-              <li><span className="footer-link">KG 11 Ave, Kigali</span></li>
-              <li><span className="footer-link">+250 788 123 456</span></li>
-              <li><span className="footer-link">info@simba.rw</span></li>
+              <li className="footer-contact-item">
+                <MapPin size={14} />
+                <span>KG 11 Ave, Kigali, Rwanda</span>
+              </li>
+              <li className="footer-contact-item">
+                <Phone size={14} />
+                <span>+250 788 123 456</span>
+              </li>
+              <li className="footer-contact-item">
+                <Mail size={14} />
+                <span>info@simba.rw</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -47,9 +66,9 @@ export default function Footer() {
         <div className="footer-bottom">
           <span>{t('footerRights')}</span>
           <div className="footer-payments">
-            <span className="footer-payment-icon">MTN MoMo</span>
-            <span className="footer-payment-icon">Airtel</span>
-            <span className="footer-payment-icon">Cash</span>
+            <span className="footer-payment-chip">MTN MoMo</span>
+            <span className="footer-payment-chip">Airtel Money</span>
+            <span className="footer-payment-chip">Cash</span>
           </div>
         </div>
       </div>

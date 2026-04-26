@@ -218,6 +218,19 @@ export function SimbaProvider({ children }) {
     setSession(null);
   }
 
+  async function resetPassword(email, newPassword) {
+    if (!store) return { ok: false, message: 'Store not ready.' };
+    const normalised = email.trim().toLowerCase();
+    const user = store.users.find((u) => u.email.toLowerCase() === normalised);
+    if (!user) return { ok: false, message: 'No account found with that email.' };
+    const passwordHash = await hashSecret(newPassword);
+    commitStore((prev) => ({
+      ...prev,
+      users: prev.users.map((u) => (u.id === user.id ? { ...u, passwordHash } : u)),
+    }));
+    return { ok: true };
+  }
+
   function upsertCartItem(productId, quantity) {
     const nextItems = [...activeCartItems];
     const existingIndex = nextItems.findIndex((item) => item.productId === productId);
@@ -519,6 +532,7 @@ export function SimbaProvider({ children }) {
     signIn,
     signUp,
     signOut,
+    resetPassword,
     addToCart,
     updateCartQuantity,
     removeFromCart,

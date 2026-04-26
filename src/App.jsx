@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import ToastContainer from './components/ToastContainer';
+import AIChatWidget from './components/AIChatWidget';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import ProductPage from './pages/ProductPage';
@@ -15,15 +16,12 @@ import CheckoutPage from './pages/CheckoutPage';
 import AuthPage from './pages/AuthPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AccountPage from './pages/AccountPage';
+import BranchDashboardPage from './pages/BranchDashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 }
 
@@ -41,13 +39,8 @@ function LoadingScreen({ message }) {
 function AppContent() {
   const { loading, error } = useSimba();
 
-  if (loading) {
-    return <LoadingScreen message="Preparing the Simba Supermarket platform..." />;
-  }
-
-  if (error) {
-    return <LoadingScreen message={error} />;
-  }
+  if (loading) return <LoadingScreen message="Preparing the Simba Supermarket platform…" />;
+  if (error)   return <LoadingScreen message={error} />;
 
   return (
     <>
@@ -55,42 +48,35 @@ function AppContent() {
       <Header />
       <CartDrawer />
       <ToastContainer />
+
       <main className="simba-shell">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/"        element={<HomePage />} />
           <Route path="/catalog" element={<CategoryPage />} />
           <Route path="/category/:categoryName" element={<CategoryPage />} />
-          <Route path="/product/:productId" element={<ProductPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route
-            path="/checkout"
-            element={(
-              <ProtectedRoute>
-                <CheckoutPage />
-              </ProtectedRoute>
-            )}
-          />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route
-            path="/account"
-            element={(
-              <ProtectedRoute>
-                <AccountPage />
-              </ProtectedRoute>
-            )}
-          />
-          <Route
-            path="/admin"
-            element={(
-              <ProtectedRoute requireRole="admin">
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            )}
-          />
+          <Route path="/product/:productId"     element={<ProductPage />} />
+          <Route path="/cart"    element={<CartPage />} />
+          <Route path="/auth"    element={<AuthPage />} />
+
+          <Route path="/checkout" element={
+            <ProtectedRoute><CheckoutPage /></ProtectedRoute>
+          } />
+          <Route path="/account" element={
+            <ProtectedRoute><AccountPage /></ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute requireRole="admin"><AdminDashboardPage /></ProtectedRoute>
+          } />
+          <Route path="/branch-dashboard" element={
+            <ProtectedRoute><BranchDashboardPage /></ProtectedRoute>
+          } />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
       <Footer />
+      <AIChatWidget />
     </>
   );
 }

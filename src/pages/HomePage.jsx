@@ -7,29 +7,61 @@ import { useSimba } from '../context/SimbaContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getCategoryImage, getCategoryIcon } from '../utils/helpers';
 
+const SERVICES = [
+  {
+    icon: '🛍️',
+    title: 'Easy Pickup',
+    text: 'Order online, collect at your nearest Simba branch at a time that suits you.',
+  },
+  {
+    icon: '🌿',
+    title: 'Fresh Selection',
+    text: 'Everyday essentials, pantry staples and household favourites — always in stock.',
+  },
+  {
+    icon: '🔒',
+    title: 'Secure Checkout',
+    text: 'Pay with MTN MoMo or Airtel Money. Fast, safe, and mobile-first.',
+  },
+  {
+    icon: '📍',
+    title: '9 Branches',
+    text: 'Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe and more across Kigali.',
+  },
+];
+
 export default function HomePage() {
-  const { store } = useSimba();
+  const { store, selectedBranch, setSelectedBranch } = useSimba();
   const { t } = useLanguage();
 
   const products = store?.products || [];
+  const branches = store?.branches || [];
+
   const categoryNames = useMemo(
     () => (store?.categories || []).map((c) => c.name),
     [store],
   );
 
   const featuredProducts = useMemo(() => {
-    return [...products]
+    let pool = products;
+    if (selectedBranch) {
+      pool = products.filter((p) => (p.stockByBranch?.[selectedBranch.id] || 0) > 0);
+    }
+    return [...pool]
       .sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
       .slice(0, 12);
-  }, [products]);
+  }, [products, selectedBranch]);
 
   const categoryCounts = useMemo(() => {
+    const source = selectedBranch
+      ? products.filter((p) => (p.stockByBranch?.[selectedBranch.id] || 0) > 0)
+      : products;
     const counts = {};
-    products.forEach((product) => {
-      counts[product.categoryName] = (counts[product.categoryName] || 0) + 1;
+    source.forEach((p) => {
+      counts[p.categoryName] = (counts[p.categoryName] || 0) + 1;
     });
     return counts;
-  }, [products]);
+  }, [products, selectedBranch]);
 
   const promoCollections = useMemo(() => ([
     {
@@ -58,37 +90,54 @@ export default function HomePage() {
   return (
     <div id="home-page">
       <CategoryNav categories={categoryNames} activeCategory="" />
+
       <Hero
         productCount={products.length}
         categoryCount={categoryNames.length}
-        spotlightProducts={featuredProducts.slice(0, 3)}
       />
 
+      {/* Services strip */}
       <section className="service-strip" id="services">
         <div className="container service-strip-grid">
-          <article className="service-card">
-            <div className="service-card-icon">🛍️</div>
-            <h3>Easy Pickup</h3>
-            <p>Order online, collect at your nearest Simba branch at a time that suits you.</p>
-          </article>
-          <article className="service-card">
-            <div className="service-card-icon">🌿</div>
-            <h3>{t('freshSelection')}</h3>
-            <p>{t('serviceFreshText')}</p>
-          </article>
-          <article className="service-card">
-            <div className="service-card-icon">🔒</div>
-            <h3>{t('securePayments')}</h3>
-            <p>{t('serviceSecureText')}</p>
-          </article>
-          <article className="service-card">
-            <div className="service-card-icon">📍</div>
-            <h3>9 Branches</h3>
-            <p>Kigali branches across Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo and more.</p>
-          </article>
+          {SERVICES.map((s) => (
+            <article className="service-card" key={s.title}>
+              <div className="service-card-icon">{s.icon}</div>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </article>
+          ))}
         </div>
       </section>
 
+      {/* Branch selector strip */}
+      <section className="container" style={{ paddingTop: '48px' }} id="branches">
+        <div className="section-header" style={{ marginBottom: '20px' }}>
+          <div>
+            <p className="eyebrow">Our Branches</p>
+            <h2 className="section-title">Choose your nearest location</h2>
+          </div>
+        </div>
+        <div className="branch-strip-grid">
+          {branches.filter((b) => b.status === 'active').map((branch) => {
+            const isSelected = selectedBranch?.id === branch.id;
+            return (
+              <button
+                key={branch.id}
+                type="button"
+                onClick={() => setSelectedBranch(branch.id)}
+                className={`branch-pick-card${isSelected ? ' active' : ''}`}
+              >
+                <span className="branch-pick-icon">📍</span>
+                <strong>{branch.name}</strong>
+                <span className="branch-pick-region">{branch.region}</span>
+                {isSelected && <span className="branch-pick-check">✓ Selected</span>}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Promo collections */}
       <section className="container promo-section" id="promotions">
         <div className="section-header">
           <div>
@@ -119,6 +168,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Category grid */}
       <section className="container category-section">
         <div className="section-header">
           <div>
@@ -135,7 +185,6 @@ export default function HomePage() {
               key={category}
               to={`/category/${encodeURIComponent(category)}`}
               className="category-card"
-              id={`category-card-${category.replace(/[^a-zA-Z]/g, '')}`}
             >
               <div
                 className="category-card-bg"
@@ -155,8 +204,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="container">
-        <ProductGrid products={featuredProducts} title={t('featuredProducts')} />
+      {/* Featured products */}
+      <section className="container" style={{ paddingBottom: '64px' }}>
+        <ProductGrid
+          products={featuredProducts}
+          title={selectedBranch
+            ? `${t('featuredProducts')} · ${selectedBranch.name}`
+            : t('featuredProducts')}
+        />
       </section>
     </div>
   );

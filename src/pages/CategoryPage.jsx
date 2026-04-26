@@ -11,7 +11,7 @@ const PRODUCTS_PER_PAGE = 24;
 export default function CategoryPage() {
   const { categoryName } = useParams();
   const [searchParams] = useSearchParams();
-  const { store } = useSimba();
+  const { store, selectedBranch } = useSimba();
   const { t } = useLanguage();
 
   const searchQuery = searchParams.get('search') || '';
@@ -39,6 +39,10 @@ export default function CategoryPage() {
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
+    if (selectedBranch) {
+      result = result.filter((product) => (product.stockByBranch?.[selectedBranch.id] || 0) > 0);
+    }
 
     if (decodedCategory !== 'all') {
       result = result.filter((product) => product.categoryName === decodedCategory);
@@ -108,7 +112,14 @@ export default function CategoryPage() {
         </div>
 
         <div className="section-header">
-          <h1 className="section-title">{pageTitle}</h1>
+          <div>
+            <h1 className="section-title">{pageTitle}</h1>
+            {selectedBranch && (
+              <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '0.875rem', marginTop: '4px' }}>
+                📍 Showing stock available at {selectedBranch.name}
+              </p>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span className="product-count">
               {filteredProducts.length} {t('showingProducts')}

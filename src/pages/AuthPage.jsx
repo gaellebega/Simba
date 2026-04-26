@@ -12,21 +12,30 @@ const INITIAL_SIGNUP = { name: '', email: '', phone: '', password: '' };
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, signIn, signUp } = useSimba();
-  const [mode, setMode] = useState('signin');
+  const { currentUser, signIn, signUp, resetPassword } = useSimba();
+
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
   const [signInForm, setSignInForm] = useState({ email: '', password: '' });
   const [signUpForm, setSignUpForm] = useState(INITIAL_SIGNUP);
+  const [forgotForm, setForgotForm] = useState({ email: '', newPassword: '', confirm: '' });
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState('error');
   const [loading, setLoading] = useState(false);
 
   if (currentUser) {
     return <Navigate to={location.state?.from || '/account'} replace />;
   }
 
+  function setError(msg) { setFeedback(msg); setFeedbackType('error'); }
+  function setSuccess(msg) { setFeedback(msg); setFeedbackType('success'); }
+
   const fillDemo = (account) => {
     setSignInForm({ email: account.email, password: account.password });
     setFeedback('');
+    setMode('signin');
   };
+
+  const switchMode = (next) => { setMode(next); setFeedback(''); };
 
   return (
     <div className="simba-page simba-auth-page">
@@ -35,29 +44,34 @@ export default function AuthPage() {
           <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🦁</div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: '800' }}>Simba Supermarket</h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-            Sign in to order, track pickups, and more.
+            {mode === 'forgot'
+              ? 'Reset your password below.'
+              : 'Sign in to order, track pickups, and more.'}
           </p>
         </div>
 
         <div className="simba-panel">
-          <div className="simba-auth-toggle" style={{ marginBottom: '24px' }}>
-            <button
-              type="button"
-              className={mode === 'signin' ? 'active' : ''}
-              onClick={() => { setMode('signin'); setFeedback(''); }}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              className={mode === 'signup' ? 'active' : ''}
-              onClick={() => { setMode('signup'); setFeedback(''); }}
-            >
-              Create account
-            </button>
-          </div>
+          {mode !== 'forgot' && (
+            <div className="simba-auth-toggle" style={{ marginBottom: '24px' }}>
+              <button
+                type="button"
+                className={mode === 'signin' ? 'active' : ''}
+                onClick={() => switchMode('signin')}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                className={mode === 'signup' ? 'active' : ''}
+                onClick={() => switchMode('signup')}
+              >
+                Create account
+              </button>
+            </div>
+          )}
 
-          {mode === 'signin' ? (
+          {/* ── SIGN IN ── */}
+          {mode === 'signin' && (
             <>
               <div style={{
                 display: 'flex',
@@ -100,7 +114,7 @@ export default function AuthPage() {
                   if (result.ok) {
                     navigate(location.state?.from || '/account');
                   } else {
-                    setFeedback(result.message);
+                    setError(result.message);
                   }
                 }}
               >
@@ -125,7 +139,9 @@ export default function AuthPage() {
                   />
                 </label>
                 {feedback && (
-                  <p className="simba-form-feedback" style={{ color: 'var(--accent-red)' }}>{feedback}</p>
+                  <p className="simba-form-feedback" style={{ color: feedbackType === 'error' ? 'var(--accent-red)' : 'var(--accent-emerald)' }}>
+                    {feedback}
+                  </p>
                 )}
                 <button
                   className="simba-primary-button"
@@ -135,9 +151,29 @@ export default function AuthPage() {
                 >
                   {loading ? 'Signing in…' : 'Sign in'}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => switchMode('forgot')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    textAlign: 'center',
+                    width: '100%',
+                    marginTop: '8px',
+                  }}
+                >
+                  Forgot password?
+                </button>
               </form>
             </>
-          ) : (
+          )}
+
+          {/* ── SIGN UP ── */}
+          {mode === 'signup' && (
             <form
               className="simba-form"
               onSubmit={async (e) => {
@@ -149,7 +185,7 @@ export default function AuthPage() {
                 if (result.ok) {
                   navigate('/account');
                 } else {
-                  setFeedback(result.message);
+                  setError(result.message);
                 }
               }}
             >
@@ -193,7 +229,9 @@ export default function AuthPage() {
                 />
               </label>
               {feedback && (
-                <p className="simba-form-feedback" style={{ color: 'var(--accent-red)' }}>{feedback}</p>
+                <p className="simba-form-feedback" style={{ color: feedbackType === 'error' ? 'var(--accent-red)' : 'var(--accent-emerald)' }}>
+                  {feedback}
+                </p>
               )}
               <button
                 className="simba-primary-button"
@@ -202,6 +240,97 @@ export default function AuthPage() {
                 style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
               >
                 {loading ? 'Creating account…' : 'Create account'}
+              </button>
+            </form>
+          )}
+
+          {/* ── FORGOT PASSWORD ── */}
+          {mode === 'forgot' && (
+            <form
+              className="simba-form"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (forgotForm.newPassword !== forgotForm.confirm) {
+                  setError('Passwords do not match.');
+                  return;
+                }
+                if (forgotForm.newPassword.length < 8) {
+                  setError('Password must be at least 8 characters.');
+                  return;
+                }
+                setLoading(true);
+                setFeedback('');
+                const result = await resetPassword(forgotForm.email, forgotForm.newPassword);
+                setLoading(false);
+                if (result.ok) {
+                  setSuccess('Password updated! You can now sign in.');
+                  setTimeout(() => switchMode('signin'), 2000);
+                } else {
+                  setError(result.message);
+                }
+              }}
+            >
+              <label>
+                <span>Your email address</span>
+                <input
+                  type="email"
+                  required
+                  value={forgotForm.email}
+                  onChange={(e) => setForgotForm((v) => ({ ...v, email: e.target.value }))}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label>
+                <span>New password</span>
+                <input
+                  type="password"
+                  minLength="8"
+                  required
+                  value={forgotForm.newPassword}
+                  onChange={(e) => setForgotForm((v) => ({ ...v, newPassword: e.target.value }))}
+                  placeholder="Min. 8 characters"
+                />
+              </label>
+              <label>
+                <span>Confirm new password</span>
+                <input
+                  type="password"
+                  minLength="8"
+                  required
+                  value={forgotForm.confirm}
+                  onChange={(e) => setForgotForm((v) => ({ ...v, confirm: e.target.value }))}
+                  placeholder="Repeat password"
+                />
+              </label>
+              {feedback && (
+                <p className="simba-form-feedback" style={{ color: feedbackType === 'error' ? 'var(--accent-red)' : 'var(--accent-emerald)' }}>
+                  {feedback}
+                </p>
+              )}
+              <button
+                className="simba-primary-button"
+                type="submit"
+                disabled={loading}
+                style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
+              >
+                {loading ? 'Updating…' : 'Reset password'}
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('signin')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  textAlign: 'center',
+                  width: '100%',
+                  marginTop: '8px',
+                }}
+              >
+                ← Back to sign in
               </button>
             </form>
           )}
