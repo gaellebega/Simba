@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingCart, User, LogOut, Menu, X,
-  MapPin, ChevronDown, Sun, Moon, Globe, LayoutDashboard,
-  Store, ShieldCheck,
+  MapPin, ChevronDown, Sun, Moon, Globe, Store,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { useSimba } from '../context/SimbaContext';
@@ -11,9 +10,9 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const LANG_OPTIONS = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'en', label: 'English',     flag: '🇬🇧' },
   { code: 'rw', label: 'Kinyarwanda', flag: '🇷🇼' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'fr', label: 'Français',    flag: '🇫🇷' },
 ];
 
 function useClickOutside(ref, handler) {
@@ -112,18 +111,23 @@ export default function Header() {
   function handleSearch(e) {
     e.preventDefault();
     const q = searchQuery.trim();
-    if (q) { navigate(`/category/all?search=${encodeURIComponent(q)}`); setSearchQuery(''); closeMenu(); }
+    if (q) {
+      navigate(`/category/all?search=${encodeURIComponent(q)}`);
+      setSearchQuery('');
+      closeMenu();
+    }
   }
+
+  const navCls = ({ isActive }) => `nb-nav-link${isActive ? ' active' : ''}`;
 
   return (
     <header className="simba-header">
-      {/* ── Topbar ── */}
+
+      {/* ════ Topbar ════ */}
       <div className="hdr-topbar">
         <div className="simba-container hdr-topbar-inner">
           <div className="hdr-topbar-left">
-            <span className="hdr-topbar-brand">
-              <Store size={13} /> {t('brandTagline')}
-            </span>
+            <span className="hdr-topbar-brand"><Store size={13} /> {t('brandTagline')}</span>
             <span className="hdr-topbar-divider">|</span>
             <span className="hdr-topbar-support">{t('supportLine')}</span>
           </div>
@@ -145,77 +149,108 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ── Main bar ── */}
-      <div className="simba-container hdr-main">
-        <BrandLogo to="/" className="simba-brand-link" />
+      {/* ════ Main bar — 3-zone grid ════ */}
+      <div className="simba-container nb-bar">
 
-        <form onSubmit={handleSearch} className="hdr-search-form" role="search">
-          <div className="hdr-search-wrap">
+        {/* ── Zone 1: Logo ── */}
+        <div className="nb-logo-zone">
+          <BrandLogo to="/" />
+        </div>
+
+        {/* ── Zone 2: Search ── */}
+        <form className="nb-search" onSubmit={handleSearch} role="search">
+          <div className="nb-search-inner">
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('searchPlaceholder')}
-              className="hdr-search-input"
+              className="nb-search-input"
               aria-label={t('search')}
             />
-            <button type="submit" className="hdr-search-btn" aria-label={t('searchBtn')}>
+            <button type="submit" className="nb-search-btn" aria-label={t('searchBtn')}>
               <Search size={16} />
             </button>
           </div>
         </form>
 
-        {/* Desktop nav */}
-        <nav className={`simba-nav${isMenuOpen ? ' open' : ''}`}>
-          <NavLink to="/" end onClick={closeMenu}>{t('navHome')}</NavLink>
-          <NavLink to="/catalog" onClick={closeMenu}>{t('navShop')}</NavLink>
-          {currentUser && <NavLink to="/account" onClick={closeMenu}>{t('navMyOrders')}</NavLink>}
-          {currentUser?.role === 'admin' && (
-            <NavLink to="/admin" onClick={closeMenu}>{t('navAdmin')}</NavLink>
-          )}
-          {currentUser && (
-            <NavLink to="/branch-dashboard" onClick={closeMenu}>{t('navBranchDash')}</NavLink>
-          )}
-        </nav>
+        {/* ── Zone 3: Nav + Actions ── */}
+        <div className="nb-tools">
 
-        <div className="simba-header-tools">
+          {/* Desktop nav links */}
+          <nav className="nb-nav" aria-label="Main navigation">
+            <NavLink to="/" end className={navCls} onClick={closeMenu}>{t('navHome')}</NavLink>
+            <NavLink to="/catalog" className={navCls} onClick={closeMenu}>{t('navShop')}</NavLink>
+            {currentUser && (
+              <NavLink to="/account" className={navCls} onClick={closeMenu}>{t('navMyOrders')}</NavLink>
+            )}
+            {currentUser?.role === 'admin' && (
+              <NavLink to="/admin" className={navCls} onClick={closeMenu}>{t('navAdmin')}</NavLink>
+            )}
+            {currentUser && (
+              <NavLink to="/branch-dashboard" className={navCls} onClick={closeMenu}>{t('navBranchDash')}</NavLink>
+            )}
+          </nav>
+
+          {/* Divider between nav and action icons */}
+          <span className="nb-sep" aria-hidden="true" />
+
           {/* Cart */}
-          <button className="hdr-cart-btn" type="button"
+          <button className="nb-icon-btn" type="button"
             onClick={() => setIsCartOpen(true)} aria-label="Open cart">
-            <ShoppingCart size={20} />
+            <ShoppingCart size={18} />
             {cartSummary.count > 0 && (
-              <span className="hdr-cart-badge">{cartSummary.count}</span>
+              <span className="nb-cart-dot">{cartSummary.count}</span>
             )}
           </button>
 
-          {/* User */}
+          {/* Signed-in user pill */}
           {currentUser ? (
-            <div className="hdr-user-menu">
-              <div className="hdr-user-avatar" title={currentUser.name}>
+            <div className="nb-user">
+              <span className="nb-user-avatar" title={currentUser.name}>
                 {currentUser.name.charAt(0).toUpperCase()}
-              </div>
-              <span className="hdr-user-name">{currentUser.name.split(' ')[0]}</span>
-              <button className="hdr-signout-btn" type="button"
-                title={t('signOut')}
+              </span>
+              <span className="nb-user-name">{currentUser.name.split(' ')[0]}</span>
+              <button className="nb-signout" type="button" title={t('signOut')}
                 onClick={() => { signOut(); closeMenu(); navigate('/'); }}>
-                <LogOut size={16} />
+                <LogOut size={14} />
               </button>
             </div>
           ) : (
-            <Link className="simba-primary-button" to="/auth" onClick={closeMenu}>
+            <Link className="nb-signin" to="/auth" onClick={closeMenu}>
               <User size={15} />
-              {t('signIn')}
+              <span>{t('signIn')}</span>
             </Link>
           )}
 
-          {/* Mobile hamburger */}
-          <button className="simba-hamburger" type="button"
+          {/* Hamburger (mobile only) */}
+          <button className="nb-burger" type="button"
             onClick={() => setIsMenuOpen((v) => !v)}
-            aria-label="Toggle navigation menu" aria-expanded={isMenuOpen}>
-            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            aria-label="Toggle menu" aria-expanded={isMenuOpen}>
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
+
         </div>
       </div>
+
+      {/* ════ Mobile full-screen nav overlay ════ */}
+      <nav className={`nb-mobile-nav${isMenuOpen ? ' open' : ''}`} aria-hidden={!isMenuOpen}>
+        <button className="nb-mobile-close" type="button" onClick={closeMenu} aria-label="Close menu">
+          <X size={20} />
+        </button>
+        <NavLink to="/" end className={navCls} onClick={closeMenu}>{t('navHome')}</NavLink>
+        <NavLink to="/catalog" className={navCls} onClick={closeMenu}>{t('navShop')}</NavLink>
+        {currentUser && (
+          <NavLink to="/account" className={navCls} onClick={closeMenu}>{t('navMyOrders')}</NavLink>
+        )}
+        {currentUser?.role === 'admin' && (
+          <NavLink to="/admin" className={navCls} onClick={closeMenu}>{t('navAdmin')}</NavLink>
+        )}
+        {currentUser && (
+          <NavLink to="/branch-dashboard" className={navCls} onClick={closeMenu}>{t('navBranchDash')}</NavLink>
+        )}
+      </nav>
+
     </header>
   );
 }
