@@ -1344,7 +1344,7 @@ ul, ol {
 }
 
 .product-card-image {
-  aspect-ratio: 1;
+  aspect-ratio: 4/3;
   overflow: hidden;
   background: var(--bg-tertiary);
   position: relative;
@@ -1396,38 +1396,43 @@ ul, ol {
 }
 
 .product-card-body {
-  padding: var(--space-md);
+  padding: 10px 12px;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
+.product-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 .product-card-category {
-  font-size: var(--font-size-xs);
+  font-size: 0.68rem;
   color: var(--primary);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-xs);
+  letter-spacing: 0.4px;
 }
 
 .product-card-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: var(--space-sm);
+  margin-bottom: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.4;
-  min-height: 2.8em;
+  line-height: 1.35;
 }
 
 .product-card-unit {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  margin-bottom: var(--space-sm);
+  margin-bottom: 4px;
 }
 
 .product-card-footer {
@@ -1435,7 +1440,7 @@ ul, ol {
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: var(--space-sm);
+  padding-top: 6px;
   border-top: 1px solid var(--border-light);
 }
 
@@ -1455,11 +1460,11 @@ ul, ol {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding: 8px 14px;
+  padding: 6px 10px;
   background: var(--primary);
   color: white;
   border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   transition: all var(--transition-fast);
 }
@@ -3295,9 +3300,8 @@ ul, ol {
 .product-card-rating {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: var(--space-xs);
-  font-size: var(--font-size-xs);
+  gap: 3px;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   font-weight: 600;
 }

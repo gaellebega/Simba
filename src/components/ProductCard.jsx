@@ -61,19 +61,21 @@ export default function ProductCard({ product }) {
       </div>
 
       <div className="product-card-body">
-        <span className="product-card-category">{product.categoryName}</span>
-        <h3 className="product-card-name">{product.name}</h3>
-
-        <div className="product-card-rating">
-          <Star size={11} fill="#F59E0B" stroke="none" />
-          <span>{rating.toFixed(1)}</span>
+        <div className="product-card-meta">
+          <span className="product-card-category">{product.categoryName}</span>
+          <div className="product-card-rating">
+            <Star size={10} fill="#F59E0B" stroke="none" />
+            <span>{rating.toFixed(1)}</span>
+          </div>
         </div>
+
+        <h3 className="product-card-name">{product.name}</h3>
 
         <span className="product-card-unit">{product.unit}</span>
 
         {selectedBranch && isInStock && (
           <div className="product-card-branch-stock">
-            <MapPin size={11} />
+            <MapPin size={10} />
             <span>{branchStock} {t('stockLeft')} {selectedBranch.name}</span>
           </div>
         )}
