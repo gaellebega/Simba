@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../store.js';
-
+// this is my ai model added
 export const router = Router();
 
 const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
